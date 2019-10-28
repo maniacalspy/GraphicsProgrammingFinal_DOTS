@@ -8,7 +8,7 @@ public class ProceduralMesh : MonoBehaviour
     Mesh mesh;
 
 
-    enum MeshShapes { triangle, square, quad};
+    enum MeshShapes { triangle, square, quad, loop};
 
     [SerializeField]
     MeshShapes thisShape;
@@ -34,6 +34,9 @@ public class ProceduralMesh : MonoBehaviour
                 break;
             case (MeshShapes.quad):
                 MakeQuadMeshData();
+                break;
+            case (MeshShapes.loop):
+                MakeLoopMeshData();
                 break;
             default:
                 MakeTriangleMeshData();
@@ -77,6 +80,24 @@ public class ProceduralMesh : MonoBehaviour
                                 16, 17, 18, 18, 17, 19,
                                 20, 21, 22, 22, 21, 23
         };
+    }
+
+    public void MakeLoopMeshData()
+    {
+        List<Vector3> NewVerticies = new List<Vector3>();
+        List<int> newTriangles = new List<int>();
+        for (int i = 1; i < 6; i++)
+        {
+            NewVerticies.Add(new Vector3(i, i, i));
+            NewVerticies.Add(new Vector3(i, i+1, i+2));
+            NewVerticies.Add(new Vector3(i+2, i+1, i));
+            newTriangles.Add(3*(i-1));
+            newTriangles.Add(3 * (i-1) + 1);
+            newTriangles.Add(3 * (i-1) + 2);
+        }
+
+        verticies = NewVerticies.ToArray();
+        triangles = newTriangles.ToArray();
     }
 
     public void CreateMesh()
