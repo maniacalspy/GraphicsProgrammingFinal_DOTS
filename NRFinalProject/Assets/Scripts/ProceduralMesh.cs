@@ -49,18 +49,18 @@ public class ProceduralMesh : MonoBehaviour
         
     }
 
-    void MakeTriangleMeshData()
+    public void MakeTriangleMeshData()
     {
         verticies = new Vector3[] { new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)};
         triangles = new int[] { 0, 1, 2 };
     }
-    void MakeSquareMeshData(float xextents)
+    public void MakeSquareMeshData(float xextents)
     {
         verticies = new Vector3[] { new Vector3(0, 0, 0), new Vector3(0, 0, xextents), new Vector3(xextents, 0, 0), new Vector3(xextents,0,xextents)};
         triangles = new int[] { 0, 1, 2, 2, 1, 3 };
     }
 
-    void MakeQuadMeshData()
+    public void MakeQuadMeshData()
     {
         verticies = new Vector3[] { new Vector3(0,0, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1), new Vector3(1,0,1), //bottom face
                                     new Vector3(0,0,0), new Vector3(0,1,0), new Vector3 (1,0,0), new Vector3 (1,1,0), //front face
@@ -79,7 +79,7 @@ public class ProceduralMesh : MonoBehaviour
         };
     }
 
-    void CreateMesh()
+    public void CreateMesh()
     {
         mesh.Clear();
         mesh.vertices = verticies;
