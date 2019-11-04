@@ -4,8 +4,10 @@ using UnityEngine;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Transforms;
+using Unity.Collections;
+using Unity.Mathematics;
 
-//[UpdateInGroup(typeof(SimulationSystemGroup))]
+[UpdateInGroup(typeof(SimulationSystemGroup))]
 public class SpawnerSystem : JobComponentSystem
 {
     BeginInitializationEntityCommandBufferSystem EntityCommandBufferSystem;
@@ -50,14 +52,29 @@ public class SpawnerSystem : JobComponentSystem
         /// </summary>
         /// <param name="entity">the entity that needs the job done</param>
         /// <param name="index"> the index of the job itself</param>
-        /// <param name="c0">the component matching the first entity type specified</param>
-        /// <param name="c1">the component matching the second entity type specified</param>
-        public void Execute(Entity entity, int index, ref TestEntity c0, ref LocalToWorld c1)
+        /// <param name="testEntity">the component matching the first entity type specified</param>
+        /// <param name="location">the component matching the second entity type specified</param>
+        public void Execute(Entity entity, int index, [ReadOnly] ref TestEntity testEntity, [ReadOnly] ref LocalToWorld location)
         {
-            Debug.Log("this should output every frame");
+            Debug.Log("this should output once");
+
+            for (var x = 0; x < testEntity.CountX; x++)
+            {
+                for (var y = 0; y < testEntity.CountY; y++)
+                {
+                    var instance = CommandBuffer.Instantiate(index, testEntity.PrefabObject);
+
+                    // Place the instantiated in a grid with some noise
+                    var position = math.transform(location.Value,
+                        new float3(x * 1.3F, noise.cnoise(new float2(x,y) * .3F) * 2, y * 1.3F));
+                    CommandBuffer.SetComponent(index, instance, new Translation { Value = position });
+                    CommandBuffer.AddComponent(index, instance, new MoveUp());
+                    CommandBuffer.AddComponent(index, instance, new MovingCube());
+                }
+            }
 
             ///uncommenting this line means the entity that runs this job is deleted, so the above line won't happen every frame
-            //CommandBuffer.DestroyEntity(index, entity);
+            CommandBuffer.DestroyEntity(index, entity);
         }
 
     }
