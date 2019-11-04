@@ -1,43 +1,66 @@
-﻿using Unity.Entities;
+﻿using Unity.Burst;
+using Unity.Collections;
+using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
 
 
-public class MoveSystem : ComponentSystem
+public class MoveSystem : JobComponentSystem
 {
-    Unity.Mathematics.Random rand = new Unity.Mathematics.Random(2515646);
+
+    EntityCommandBufferSystem m_Barrier;
+
+    static Unity.Mathematics.Random rand = new Unity.Mathematics.Random(2515646);
 
 
-    protected override void OnUpdate()
+    protected override void OnCreate()
     {
-        Entities.WithAllReadOnly<MovingCube, MoveUp>().ForEach(
-             (Entity id, ref Translation translation) =>
-                {
-                    var deltaTime = Time.deltaTime;
-                    translation = new Translation()
-                    {
-                        Value = new float3(translation.Value.x, translation.Value.y + deltaTime * rand.NextFloat(), translation.Value.z)
-                    };
-
-                    if (translation.Value.y > 6.0f)
-                        EntityManager.RemoveComponent<MoveUp>(id);
-                }
-             );
-
-
-
-        Entities.WithAllReadOnly<MovingCube>().WithNone<MoveUp>().ForEach(
-                (Entity id, ref Translation translation) =>
-                {
-                    translation = new Translation()
-                    {
-                        Value = new float3(translation.Value.x, -6.0f, translation.Value.z)
-                    };
-
-                    EntityManager.AddComponentData(id, new MoveUp());
-                }
-            );
+        // Cache the BeginInitializationEntityCommandBufferSystem in a field, so we don't have to create it every frame
+        m_Barrier = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
     }
 
+    //[BurstCompile]
+    [RequireComponentTag(typeof(MoveUp), typeof(MovingCube))]
+    struct MoveJob : IJobForEachWithEntity<Translation>
+    {
+        public float DeltaTime;
+
+        [WriteOnly]
+        public EntityCommandBuffer.Concurrent CommandBuffer;        
+
+        // The [ReadOnly] attribute tells the job scheduler that this job will not write to rotSpeedSpawnAndRemove
+        public void Execute(Entity entity, int index, ref Translation translation)
+        {
+     // Rotate something about its up vector at the speed given by RotationSpeed_SpawnAndRemove.
+            translation.Value = new float3(translation.Value.x, translation.Value.y + DeltaTime * MoveSystem.rand.NextFloat(), translation.Value.z);
+
+            if (translation.Value.y > 7.0f)
+            {
+                CommandBuffer.RemoveComponent<MoveUp>(index, entity);
+                CommandBuffer.AddComponent<ResetCube>(index, entity);
+
+            }
+        }
+    }
+   
+
+    protected override JobHandle OnUpdate(JobHandle inputDeps)
+    {
+
+        var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
+
+
+        ///create the job that needs to be scheduled
+        var job = new MoveJob
+        {
+            DeltaTime = Time.deltaTime,
+            CommandBuffer = commandBuffer
+        }.Schedule(this, inputDeps);
+
+        m_Barrier.AddJobHandleForProducer(job);
+
+        return job;
+    }
 }

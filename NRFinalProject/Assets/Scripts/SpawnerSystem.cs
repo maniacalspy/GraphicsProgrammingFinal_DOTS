@@ -62,14 +62,17 @@ public class SpawnerSystem : JobComponentSystem
             {
                 for (var y = 0; y < testEntity.CountY; y++)
                 {
-                    var instance = CommandBuffer.Instantiate(index, testEntity.PrefabObject);
+                    for (var z = 0; z < testEntity.CountZ; z++)
+                    {
+                        var instance = CommandBuffer.Instantiate(index, testEntity.PrefabObject);
 
-                    // Place the instantiated in a grid with some noise
-                    var position = math.transform(location.Value,
-                        new float3(x * 1.3F, noise.cnoise(new float2(x,y) * .3F) * 2, y * 1.3F));
-                    CommandBuffer.SetComponent(index, instance, new Translation { Value = position });
-                    CommandBuffer.AddComponent(index, instance, new MoveUp());
-                    CommandBuffer.AddComponent(index, instance, new MovingCube());
+                        // Place the instantiated in a grid with some noise
+                        var position = math.transform(location.Value,
+                            new float3(x * 1.3F, -7 + y * 1.3F, z * 1.3F));
+                        CommandBuffer.SetComponent(index, instance, new Translation { Value = position });
+                        CommandBuffer.AddComponent(index, instance, new MoveUp());
+                        CommandBuffer.AddComponent(index, instance, new MovingCube());
+                    }
                 }
             }
 

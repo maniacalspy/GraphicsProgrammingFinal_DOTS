@@ -7,6 +7,7 @@ public class SpawnerEntityConverter : MonoBehaviour, IDeclareReferencedPrefabs, 
     public GameObject Prefab;
     public int countX;
     public int countY;
+    public int countZ;
 
     public void DeclareReferencedPrefabs(List<GameObject> referencedPrefabs)
     {
@@ -20,7 +21,8 @@ public class SpawnerEntityConverter : MonoBehaviour, IDeclareReferencedPrefabs, 
         {
             PrefabObject = conversionSystem.GetPrimaryEntity(Prefab),
             CountX = countX,
-            CountY = countY
+            CountY = countY,
+            CountZ = countZ
         };
 
         dstManager.AddComponentData(entity, SpawnerData);
