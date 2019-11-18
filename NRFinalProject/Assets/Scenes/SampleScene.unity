@@ -153,8 +153,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Prefab: {fileID: 4051403916013837748, guid: 0aaf4bff92fa9b94b8ffb967dd533a0c, type: 3}
   countX: 20
-  countY: 11
-  countZ: 10
+  countY: 15
+  countZ: 15
 --- !u!114 &221048319
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -350,10 +350,10 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.460262, y: -0, z: -0, w: 0.88778317}
-  m_LocalPosition: {x: 11.99, y: 22, z: -10.95}
+  m_LocalRotation: {x: -0, y: 0.1808514, z: -0, w: 0.98351043}
+  m_LocalPosition: {x: -6.02, y: 2, z: -23.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 54.808002, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 20.839, z: 0}

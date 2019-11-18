@@ -22,8 +22,8 @@ public class MoveSystem : JobComponentSystem
     }
 
     //[BurstCompile]
-    [RequireComponentTag(typeof(MoveUp), typeof(MovingCube))]
-    struct MoveJob : IJobForEachWithEntity<Translation>
+    [RequireComponentTag(typeof(MovingCube))]
+    struct MoveJob : IJobForEachWithEntity<Translation, MoveUp>
     {
         public float DeltaTime;
 
@@ -31,16 +31,16 @@ public class MoveSystem : JobComponentSystem
         public EntityCommandBuffer.Concurrent CommandBuffer;        
 
         // The [ReadOnly] attribute tells the job scheduler that this job will not write to rotSpeedSpawnAndRemove
-        public void Execute(Entity entity, int index, ref Translation translation)
+        public void Execute(Entity entity, int index, ref Translation translation, ref MoveUp moving)
         {
      // Rotate something about its up vector at the speed given by RotationSpeed_SpawnAndRemove.
-            translation.Value = new float3(translation.Value.x, translation.Value.y + DeltaTime * MoveSystem.rand.NextFloat(), translation.Value.z);
+            translation.Value = new float3(translation.Value.x + DeltaTime * MoveSystem.rand.NextFloat(), translation.Value.y + DeltaTime * MoveSystem.rand.NextFloat(), translation.Value.z);
+            moving.LifeSpan -= DeltaTime;
 
-            if (translation.Value.y > 7.0f)
+            if (translation.Value.y > 7.0f || moving.LifeSpan <= 0f || translation.Value.x > 20f)
             {
                 CommandBuffer.RemoveComponent<MoveUp>(index, entity);
                 CommandBuffer.AddComponent<ResetCube>(index, entity);
-
             }
         }
     }

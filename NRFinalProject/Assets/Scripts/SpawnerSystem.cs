@@ -12,6 +12,7 @@ public class SpawnerSystem : JobComponentSystem
 {
     BeginInitializationEntityCommandBufferSystem EntityCommandBufferSystem;
 
+    static Unity.Mathematics.Random rand = new Unity.Mathematics.Random(2515646);
 
     protected override void OnCreate()
     {
@@ -67,10 +68,14 @@ public class SpawnerSystem : JobComponentSystem
                         var instance = CommandBuffer.Instantiate(index, testEntity.PrefabObject);
 
                         // Place the instantiated in a grid with some noise
+                        float radius = 10f;
+                        float xpos = rand.NextFloat(-radius, radius);
+                        float AbsXPos = Mathf.Abs(xpos);
+                        float zpos = rand.NextFloat(-radius + AbsXPos, radius - AbsXPos);
                         var position = math.transform(location.Value,
-                            new float3(x * 1.3F, -7 + y * 1.3F, z * 1.3F));
+                            new float3(xpos, -7 + y * 1.3F, zpos));
                         CommandBuffer.SetComponent(index, instance, new Translation { Value = position });
-                        CommandBuffer.AddComponent(index, instance, new MoveUp());
+                        CommandBuffer.AddComponent(index, instance, new MoveUp(rand.NextFloat(1f, 50f)));
                         CommandBuffer.AddComponent(index, instance, new MovingCube());
                     }
                 }
