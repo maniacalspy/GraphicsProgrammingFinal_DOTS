@@ -153,8 +153,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Prefab: {fileID: 4051403916013837748, guid: 0aaf4bff92fa9b94b8ffb967dd533a0c, type: 3}
   countX: 20
-  countY: 15
-  countZ: 15
+  countY: 20
+  countZ: 20
 --- !u!114 &221048319
 MonoBehaviour:
   m_ObjectHideFlags: 0
