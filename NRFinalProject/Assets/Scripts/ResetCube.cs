@@ -52,8 +52,11 @@ public class ResetSystem : JobComponentSystem
             float newZ = rand.NextFloat(-radius + AbsNewX, radius - AbsNewX);
             translation.Value = new float3(newX, -7.0f, newZ);
             CommandBuffer.RemoveComponent<ResetCube>(index, entity);
-            MoveUp NewMove = new MoveUp(rand.NextFloat(10f, 50f));
-            CommandBuffer.AddComponent<MoveUp>(index, entity, NewMove);
+            int BlockType = rand.NextInt(1, SpawnerSystem.SpawnOdds);
+            if (BlockType == 1) CommandBuffer.AddComponent(index, entity, new MoveUp(rand.NextFloat(1f, 25f)));
+            else CommandBuffer.AddComponent(index, entity, new MoveRandom(rand.NextFloat(1f, MoveRandom.LifeSpanMax), rand.NextFloat3(MoveRandom.DirectionMin, MoveRandom.DirectionMax)));
+            //MoveUp NewMove = new MoveUp(rand.NextFloat(10f, 50f));
+            //CommandBuffer.AddComponent<MoveUp>(index, entity, NewMove);
         }
     }
 

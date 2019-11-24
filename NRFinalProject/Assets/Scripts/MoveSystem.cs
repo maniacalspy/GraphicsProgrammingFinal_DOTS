@@ -44,7 +44,31 @@ public class MoveSystem : JobComponentSystem
             }
         }
     }
-   
+
+    [RequireComponentTag(typeof(MovingCube))]
+    struct MoveRandomJob : IJobForEachWithEntity<Translation, MoveRandom>
+    {
+        public float DeltaTime;
+
+        [WriteOnly]
+        public EntityCommandBuffer.Concurrent CommandBuffer;
+
+        // The [ReadOnly] attribute tells the job scheduler that this job will not write to rotSpeedSpawnAndRemove
+        public void Execute(Entity entity, int index, ref Translation translation, ref MoveRandom moving)
+        {
+            // Rotate something about its up vector at the speed given by RotationSpeed_SpawnAndRemove.
+            translation.Value = new float3(translation.Value.x + moving.Direction.x * DeltaTime, translation.Value.y + DeltaTime * moving.Direction.y, translation.Value.z + moving.Direction.z * DeltaTime);
+            moving.LifeSpan -= DeltaTime;
+
+            if (translation.Value.y > 7.0f || moving.LifeSpan <= 0f || translation.Value.x > 20f)
+            {
+                CommandBuffer.RemoveComponent<MoveRandom>(index, entity);
+                CommandBuffer.AddComponent<ResetCube>(index, entity);
+            }
+        }
+    }
+
+
 
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
@@ -54,6 +78,17 @@ public class MoveSystem : JobComponentSystem
 
         ///create the job that needs to be scheduled
         var job = new MoveJob
+        {
+            DeltaTime = Time.deltaTime,
+            CommandBuffer = commandBuffer
+        }.Schedule(this, inputDeps);
+
+        m_Barrier.AddJobHandleForProducer(job);
+
+        ///I have no idea if this is right but it does what I want it to
+        job.Complete();
+
+        job = new MoveRandomJob
         {
             DeltaTime = Time.deltaTime,
             CommandBuffer = commandBuffer
