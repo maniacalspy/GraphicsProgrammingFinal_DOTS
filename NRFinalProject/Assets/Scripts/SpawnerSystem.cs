@@ -14,6 +14,7 @@ public class SpawnerSystem : JobComponentSystem
 
     static Unity.Mathematics.Random rand = new Unity.Mathematics.Random(2515646);
 
+
     public static int SpawnOdds = 4;
 
     protected override void OnCreate()
@@ -21,6 +22,13 @@ public class SpawnerSystem : JobComponentSystem
         // Cache the BeginInitializationEntityCommandBufferSystem in a field, so we don't have to create it every frame
         EntityCommandBufferSystem = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
     }
+
+    public static float3 GetRandComponentfloat3()
+    {
+        return new float3(rand.NextFloat(MoveRandom.DirectionMin, MoveRandom.DirectionMax), rand.NextFloat(MoveRandom.DirectionMin, MoveRandom.DirectionMax),
+                                        rand.NextFloat(MoveRandom.DirectionMin, MoveRandom.DirectionMax));
+    }
+
 
     /// <summary>
     /// This is where you would create the jobs themselves and schedule them. The job then takes commands and adds them to the command buffer, which will be executed on various threads
@@ -49,8 +57,6 @@ public class SpawnerSystem : JobComponentSystem
     {
         public EntityCommandBuffer.Concurrent CommandBuffer;
 
-        int UpCount;
-        int RandCount;
         /// <summary>
         /// this is where the actual logic of the job is held and carried out, such as the example spawning the game objects
         /// </summary>
@@ -60,8 +66,6 @@ public class SpawnerSystem : JobComponentSystem
         /// <param name="location">the component matching the second entity type specified</param>
         public void Execute(Entity entity, int index, [ReadOnly] ref TestEntity testEntity, [ReadOnly] ref LocalToWorld location)
         {
-            UpCount = 0;
-            RandCount = 0;
             Debug.Log("this should output once");
 
             for (var x = 0; x < testEntity.CountX; x++)
@@ -75,24 +79,27 @@ public class SpawnerSystem : JobComponentSystem
                        
                         // Place the instantiated in a grid with some noise
                         float radius = 10f;
-                        float xpos = rand.NextFloat(-radius, radius);
-                        float AbsXPos = Mathf.Abs(xpos);
-                        float zpos = rand.NextFloat(-radius + AbsXPos, radius - AbsXPos);
+                        //float xpos = rand.NextFloat(-radius, radius);
+                        //float AbsXPos = Mathf.Abs(xpos);
+                        float angle = rand.NextFloat(0f, Mathf.PI * 2);
+                        float xpos = Mathf.Sin(angle) * rand.NextFloat(radius);
+                        float zpos = Mathf.Cos(angle) * rand.NextFloat(radius);
+
+                        //float zpos = rand.NextFloat(-radius + AbsXPos, radius - AbsXPos);
                         var position = math.transform(location.Value,
-                            new float3(xpos, -7 + y * 1.3F, zpos));
+                            new float3(xpos, -7 + 14 * y/testEntity.CountY, zpos));
 
                         CommandBuffer.SetComponent(index, instance, new Translation { Value = position });
-
-                        int BlockType = rand.NextInt(1, SpawnOdds);
+                        //the +1 is to account for the fact that the upper limit is exclusive
+                        int BlockType = rand.NextInt(1, SpawnOdds + 1);
                         if (BlockType == 1)
                         {
                             CommandBuffer.AddComponent(index, instance, new MoveUp(rand.NextFloat(1f, 25f)));
-                            UpCount++;
                         }
                         else
                         {
-                            CommandBuffer.AddComponent(index, instance, new MoveRandom(rand.NextFloat(1f, MoveRandom.LifeSpanMax), rand.NextFloat3(MoveRandom.DirectionMin, MoveRandom.DirectionMax)));
-                            RandCount++;
+                            CommandBuffer.AddComponent(index, instance, 
+                                    new MoveRandom(rand.NextFloat(1f, MoveRandom.LifeSpanMax), GetRandComponentfloat3()));
                         }
                         
                         CommandBuffer.AddComponent(index, instance, new MovingCube());
@@ -101,7 +108,6 @@ public class SpawnerSystem : JobComponentSystem
             }
 
             ///uncommenting this line means the entity that runs this job is deleted, so the above line won't happen every frame
-            Debug.Log($"Up Blocks: {UpCount} RandBlocks: {RandCount}");
             CommandBuffer.DestroyEntity(index, entity);
         }
 
