@@ -47,14 +47,15 @@ public class ResetSystem : JobComponentSystem
         public void Execute(Entity entity, int index, ref Translation translation)
         {
             float radius = 10f;
-            float angle = rand.NextFloat(0f, Mathf.PI * 2);
-            float newX = Mathf.Sin(angle) * rand.NextFloat(radius);
-            float newZ = Mathf.Cos(angle) * rand.NextFloat(radius);
+            float angle = RandomCache.GetAngle();
+            if (RandomCache.GetCenterDistsCount() == 0) RandomCache.AddCenterDist(rand.NextFloat(radius));
+            float newX = Mathf.Sin(angle) * RandomCache.GetCenterDistance();
+            float newZ = Mathf.Cos(angle) * RandomCache.GetCenterDistance();
             translation.Value = new float3(newX, -7.0f, newZ);
             CommandBuffer.RemoveComponent<ResetCube>(index, entity);
             int BlockType = rand.NextInt(1, SpawnerSystem.SpawnOdds + 1);
-            if (BlockType == 1) CommandBuffer.AddComponent(index, entity, new MoveUp(rand.NextFloat(1f, 25f)));
-            else CommandBuffer.AddComponent(index, entity, new MoveRandom(rand.NextFloat(1f, MoveRandom.LifeSpanMax), SpawnerSystem.GetRandComponentfloat3()));
+            if (BlockType == 1) CommandBuffer.AddComponent(index, entity, new MoveUp(RandomCache.GetLifeSpan()));
+            else CommandBuffer.AddComponent(index, entity, new MoveRandom(RandomCache.GetLifeSpan(), SpawnerSystem.GetRandComponentfloat3()));
         }
     }
 

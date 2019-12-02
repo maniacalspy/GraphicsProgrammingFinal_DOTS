@@ -25,8 +25,13 @@ public class SpawnerSystem : JobComponentSystem
 
     public static float3 GetRandComponentfloat3()
     {
-        return new float3(rand.NextFloat(MoveRandom.DirectionMin, MoveRandom.DirectionMax), rand.NextFloat(MoveRandom.DirectionMin, MoveRandom.DirectionMax),
+        if (RandomCache.GetDirectionCount() < RandomCache.CacheSize)
+        {
+            float3 DirectionToAdd = new float3(rand.NextFloat(MoveRandom.DirectionMin, MoveRandom.DirectionMax), rand.NextFloat(MoveRandom.DirectionMin, MoveRandom.DirectionMax),
                                         rand.NextFloat(MoveRandom.DirectionMin, MoveRandom.DirectionMax));
+            RandomCache.AddDirection(DirectionToAdd);
+        }
+        return RandomCache.GetDirection();
     }
 
 
@@ -79,27 +84,42 @@ public class SpawnerSystem : JobComponentSystem
                        
                         // Place the instantiated in a grid with some noise
                         float radius = 10f;
-                        //float xpos = rand.NextFloat(-radius, radius);
-                        //float AbsXPos = Mathf.Abs(xpos);
-                        float angle = rand.NextFloat(0f, Mathf.PI * 2);
-                        float xpos = Mathf.Sin(angle) * rand.NextFloat(radius);
-                        float zpos = Mathf.Cos(angle) * rand.NextFloat(radius);
 
-                        //float zpos = rand.NextFloat(-radius + AbsXPos, radius - AbsXPos);
+                        if(RandomCache.GetAngleCount() < RandomCache.CacheSize)
+                        {
+                            RandomCache.AddAngle(rand.NextFloat(0f, Mathf.PI * 2));
+                        }
+
+                        float angle = RandomCache.GetAngle();
+
+                        
+
+                        if (RandomCache.GetCenterDistsCount() < RandomCache.CacheSize)
+                        {
+                            RandomCache.AddCenterDist(rand.NextFloat(radius));
+                        }
+
+                        float xpos = Mathf.Sin(angle) * RandomCache.GetCenterDistance();
+                        float zpos = Mathf.Cos(angle) * RandomCache.GetCenterDistance();
+
                         var position = math.transform(location.Value,
                             new float3(xpos, -7 + 14 * y/testEntity.CountY, zpos));
 
                         CommandBuffer.SetComponent(index, instance, new Translation { Value = position });
                         //the +1 is to account for the fact that the upper limit is exclusive
+                        
+                        //this one doesn't use the cache to allow the number of random blocks to vary more
                         int BlockType = rand.NextInt(1, SpawnOdds + 1);
                         if (BlockType == 1)
                         {
-                            CommandBuffer.AddComponent(index, instance, new MoveUp(rand.NextFloat(1f, 25f)));
+                            if (RandomCache.GetLifeSpanCount() < RandomCache.CacheSize) RandomCache.AddLifeSpan(rand.NextFloat(1f, 25f)); 
+                            CommandBuffer.AddComponent(index, instance, new MoveUp(RandomCache.GetLifeSpan()));
                         }
                         else
                         {
+                            if (RandomCache.GetLifeSpanCount() < RandomCache.CacheSize) RandomCache.AddLifeSpan(rand.NextFloat(1f, MoveRandom.LifeSpanMax));
                             CommandBuffer.AddComponent(index, instance, 
-                                    new MoveRandom(rand.NextFloat(1f, MoveRandom.LifeSpanMax), GetRandComponentfloat3()));
+                                    new MoveRandom(RandomCache.GetLifeSpan(), GetRandComponentfloat3()));
                         }
                         
                         CommandBuffer.AddComponent(index, instance, new MovingCube());
