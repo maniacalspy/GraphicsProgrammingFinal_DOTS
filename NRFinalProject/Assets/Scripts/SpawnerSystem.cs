@@ -71,7 +71,6 @@ public class SpawnerSystem : JobComponentSystem
         /// <param name="location">the component matching the second entity type specified</param>
         public void Execute(Entity entity, int index, [ReadOnly] ref TestEntity testEntity, [ReadOnly] ref LocalToWorld location)
         {
-            Debug.Log("this should output once");
 
             for (var x = 0; x < testEntity.CountX; x++)
             {

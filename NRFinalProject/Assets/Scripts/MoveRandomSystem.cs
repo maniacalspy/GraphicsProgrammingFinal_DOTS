@@ -6,8 +6,7 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
 
-
-public class MoveSystem : JobComponentSystem
+public class MoveRandomSystem : JobComponentSystem
 {
 
     EntityCommandBufferSystem m_Barrier;
@@ -21,33 +20,6 @@ public class MoveSystem : JobComponentSystem
         m_Barrier = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
     }
 
-    //[BurstCompile]
-    [RequireComponentTag(typeof(MovingCube))]
-    struct MoveJob : IJobForEachWithEntity<Translation, MoveUp>
-    {
-        public float DeltaTime;
-
-        [WriteOnly]
-        public EntityCommandBuffer.Concurrent CommandBuffer;        
-
-        // The [ReadOnly] attribute tells the job scheduler that this job will not write to rotSpeedSpawnAndRemove
-        public void Execute(Entity entity, int index, ref Translation translation, ref MoveUp moving)
-        {
-     // Rotate something about its up vector at the speed given by RotationSpeed_SpawnAndRemove.
-            if(RandomCache.GetSubOneCount() < RandomCache.CacheSize)
-            {
-                RandomCache.AddSubOne(MoveSystem.rand.NextFloat());
-            }
-            translation.Value = new float3(translation.Value.x + DeltaTime * RandomCache.GetSubOne(), translation.Value.y + DeltaTime * RandomCache.GetSubOne(), translation.Value.z);
-            moving.LifeSpan -= DeltaTime;
-
-            if (translation.Value.y > 7.0f || moving.LifeSpan <= 0f || translation.Value.x > 20f)
-            {
-                CommandBuffer.RemoveComponent<MoveUp>(index, entity);
-                CommandBuffer.AddComponent<ResetCube>(index, entity);
-            }
-        }
-    }
 
     [RequireComponentTag(typeof(MovingCube))]
     struct MoveRandomJob : IJobForEachWithEntity<Translation, MoveRandom>
@@ -73,15 +45,12 @@ public class MoveSystem : JobComponentSystem
     }
 
 
-
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
 
         var commandBuffer = m_Barrier.CreateCommandBuffer().ToConcurrent();
 
-
-        ///create the job that needs to be scheduled
-        var job = new MoveJob
+        var job = new MoveRandomJob
         {
             DeltaTime = Time.deltaTime,
             CommandBuffer = commandBuffer
@@ -89,17 +58,6 @@ public class MoveSystem : JobComponentSystem
 
         m_Barrier.AddJobHandleForProducer(job);
 
-        ///I have no idea if this is right but it does what I want it to
-        /*job.Complete();
-
-        job = new MoveRandomJob
-        {
-            DeltaTime = Time.deltaTime,
-            CommandBuffer = commandBuffer
-        }.Schedule(this, inputDeps);
-
-        m_Barrier.AddJobHandleForProducer(job);
-        */
         return job;
     }
 }

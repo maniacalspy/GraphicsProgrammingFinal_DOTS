@@ -11,36 +11,48 @@ public struct RandomCache
 {
     public static int CacheSize = 10000;
 
-    #region positions
-    static List<float3> Positions = new List<float3>();
-    static int PositionIndex = 0;
+    #region SubOne
+    static List<float> SubOneFloats = new List<float>();
+    static int SubOneIndex = 0;
 
-    public static float3 GetPosition()
+    public static float GetSubOne()
     {
-        float3 CurPosition = PositionIndex < Positions.Count ? Positions[PositionIndex] : Positions[0]; ;
-        PositionIndex++;
-        if (PositionIndex >= Positions.Count) PositionIndex = 0;
-        return CurPosition;
+        float CurFloat = SubOneIndex < SubOneFloats.Count ? 
+            SubOneFloats[SubOneIndex] : 
+            SubOneFloats[0];
+        if (SubOneIndex + 1 >= SubOneFloats.Count) SubOneIndex = 0;
+        else SubOneIndex++;
+        return CurFloat;
     }
 
-    public static int GetPositionCount()
+    public static int GetSubOneCount()
     {
-        return Positions.Count;
+        return SubOneFloats.Count;
     }
 
-    public static void AddPosition(float3 newPosition)
+    public static void AddSubOne(float newFloat)
     {
-        if (Positions.Count >= CacheSize)
+        if (SubOneFloats.Count >= CacheSize)
         {
-            if (PositionIndex > 0) Positions[PositionIndex - 1] = newPosition;
-            else Positions[0] = newPosition;
+            try
+            {
+                if (SubOneIndex > 0) SubOneFloats[SubOneIndex - 1] = newFloat;
+            }
+            catch {
+                SubOneFloats[0] = newFloat;
+            }
         }
         else
         {
-            Positions.Add(newPosition);
+            try
+            {
+                SubOneFloats.Add(newFloat);
+            }
+            catch { }
         }
     }
-    #endregion positions
+
+    #endregion SubOne
 
 
     #region Directions
@@ -50,9 +62,10 @@ public struct RandomCache
 
     public static float3 GetDirection()
     {
-        float3 CurDirection = DirectionIndex < Directions.Count ? Directions[DirectionIndex] : Directions[0];
-        DirectionIndex++;
-        if (DirectionIndex >= Directions.Count) DirectionIndex = 0;
+        float3 CurDirection = DirectionIndex < Directions.Count ? Directions[DirectionIndex] : CurDirection = Directions[0];
+
+        if (DirectionIndex + 1 >= Directions.Count) DirectionIndex = 0;
+        else DirectionIndex++;
         return CurDirection;
     }
 
@@ -85,8 +98,8 @@ public struct RandomCache
     public static float GetAngle()
     {
         float CurAngle = AngleIndex < Angles.Count ? Angles[AngleIndex] : Angles[0];
-        AngleIndex++;
-        if (AngleIndex >= Angles.Count) AngleIndex = 0;
+        if (AngleIndex + 1 >= Angles.Count) AngleIndex = 0;
+        else AngleIndex++;
         return CurAngle;
     }
 
@@ -118,9 +131,9 @@ public struct RandomCache
 
     public static float GetLifeSpan()
     {
-        float CurLS = LSIndex < LifeSpans.Count ?  LifeSpans[LSIndex] : LifeSpans[0];
-        LSIndex++;
-        if (LSIndex >= LifeSpans.Count) LSIndex = 0;
+        float CurLS = LSIndex < LifeSpans.Count ? LifeSpans[LSIndex] : LifeSpans[0];
+        if (LSIndex + 1 >= LifeSpans.Count) LSIndex = 0;
+        else LSIndex++;
         return CurLS;
     }
 
@@ -150,9 +163,9 @@ public struct RandomCache
 
     public static float GetCenterDistance()
     {
-        float CurCD = CDIndex < CenterDists.Count ?  CenterDists[CDIndex] : CenterDists[0];
-        CDIndex++;
-        if (CDIndex >= CenterDists.Count) CDIndex = 0;
+        float CurCD  = CDIndex < CenterDists.Count ? CenterDists[CDIndex] : CenterDists[0];
+        if (CDIndex + 1 >= CenterDists.Count) CDIndex = 0;
+        else CDIndex++;
         return CurCD;
     }
 
