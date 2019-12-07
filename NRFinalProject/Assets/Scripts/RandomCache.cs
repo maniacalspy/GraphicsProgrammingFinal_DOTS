@@ -14,15 +14,34 @@ public struct RandomCache
     #region SubOne
     static List<float> SubOneFloats = new List<float>();
     static int SubOneIndex = 0;
-
+    static object SubOneLock = new object();
     public static float GetSubOne()
     {
-        float CurFloat = SubOneIndex < SubOneFloats.Count ? 
-            SubOneFloats[SubOneIndex] : 
+        float output;
+        if (SubOneFloats.Count - SubOneIndex <= 100)
+        {
+            lock (SubOneLock)
+            {
+                output = AccessCacheList(SubOneFloats, ref SubOneIndex);
+                if (SubOneIndex + 1 >= SubOneFloats.Count) SubOneIndex = 0;
+            }
+        }
+        else
+        {
+            output = SubOneIndex < SubOneFloats.Count ?
+            SubOneFloats[SubOneIndex] :
             SubOneFloats[0];
-        if (SubOneIndex + 1 >= SubOneFloats.Count) SubOneIndex = 0;
-        else SubOneIndex++;
-        return CurFloat;
+            if (SubOneIndex + 1 >= SubOneFloats.Count) SubOneIndex = 0;
+            else SubOneIndex++;
+        }
+        
+        return output;
+    }
+    static T AccessCacheList<T>(List<T> list, ref int index)
+    {
+        T item = list[index];
+        index++;
+        return item;
     }
 
     public static int GetSubOneCount()

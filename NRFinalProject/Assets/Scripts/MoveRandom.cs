@@ -5,8 +5,8 @@ using Unity.Mathematics;
 [Serializable]
 public struct MoveRandom : IComponentData
 {
-    public static float DirectionMin = .1f;
-    public static float DirectionMax = 1.51f;
+    public static float DirectionMin = .51f;
+    public static float DirectionMax = 2.01f;
     public static float LifeSpanMax = 15f;
     public float LifeSpan;
     public float3 Direction;

@@ -14,7 +14,7 @@ public class SpawnerSystem : JobComponentSystem
 
     static Unity.Mathematics.Random rand = new Unity.Mathematics.Random(2515646);
 
-
+    public static float3 SpawnerPos;
     public static int SpawnOdds = 4;
 
     protected override void OnCreate()
@@ -27,8 +27,8 @@ public class SpawnerSystem : JobComponentSystem
     {
         if (RandomCache.GetDirectionCount() < RandomCache.CacheSize)
         {
-            float3 DirectionToAdd = new float3(rand.NextFloat(MoveRandom.DirectionMin, MoveRandom.DirectionMax), rand.NextFloat(MoveRandom.DirectionMin, MoveRandom.DirectionMax),
-                                        rand.NextFloat(MoveRandom.DirectionMin, MoveRandom.DirectionMax));
+            float3 DirectionToAdd = new float3(rand.NextFloat(MoveRandom.DirectionMin*2, MoveRandom.DirectionMax), rand.NextFloat(MoveRandom.DirectionMin, MoveRandom.DirectionMax),
+                                        rand.NextFloat(MoveRandom.DirectionMin*2, MoveRandom.DirectionMax));
             RandomCache.AddDirection(DirectionToAdd);
         }
         return RandomCache.GetDirection();
@@ -71,7 +71,7 @@ public class SpawnerSystem : JobComponentSystem
         /// <param name="location">the component matching the second entity type specified</param>
         public void Execute(Entity entity, int index, [ReadOnly] ref TestEntity testEntity, [ReadOnly] ref LocalToWorld location)
         {
-
+            SpawnerPos = location.Position;
             for (var x = 0; x < testEntity.CountX; x++)
             {
                 for (var y = 0; y < testEntity.CountY; y++)
@@ -82,7 +82,7 @@ public class SpawnerSystem : JobComponentSystem
                         
                        
                         // Place the instantiated in a grid with some noise
-                        float radius = 10f;
+                        float radius = 1f;
 
                         if(RandomCache.GetAngleCount() < RandomCache.CacheSize)
                         {
@@ -98,11 +98,11 @@ public class SpawnerSystem : JobComponentSystem
                             RandomCache.AddCenterDist(rand.NextFloat(radius));
                         }
 
-                        float xpos = Mathf.Sin(angle) * RandomCache.GetCenterDistance();
-                        float zpos = Mathf.Cos(angle) * RandomCache.GetCenterDistance();
+                        float xpos = SpawnerPos.x + Mathf.Sin(angle) * RandomCache.GetCenterDistance();
+                        float zpos = SpawnerPos.z + Mathf.Cos(angle) * RandomCache.GetCenterDistance();
 
                         var position = math.transform(location.Value,
-                            new float3(xpos, -7 + 14 * y/testEntity.CountY, zpos));
+                            new float3(xpos, 2 * y/testEntity.CountY, zpos));
 
                         CommandBuffer.SetComponent(index, instance, new Translation { Value = position });
                         //the +1 is to account for the fact that the upper limit is exclusive
