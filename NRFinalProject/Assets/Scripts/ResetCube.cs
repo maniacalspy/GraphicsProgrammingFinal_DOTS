@@ -16,7 +16,7 @@ public class ResetSystem : JobComponentSystem
 {
     EntityCommandBufferSystem m_Barrier;
 
-    static Unity.Mathematics.Random rand = new Unity.Mathematics.Random(2515646);
+
 
     protected override void OnCreate()
     {
@@ -46,14 +46,12 @@ public class ResetSystem : JobComponentSystem
         public EntityCommandBuffer.Concurrent CommandBuffer;
         public void Execute(Entity entity, int index, ref Translation translation)
         {
-            float radius = 1f;
             float angle = RandomCache.GetAngle();
-            if (RandomCache.GetCenterDistsCount() == 0) RandomCache.AddCenterDist(rand.NextFloat(radius));
             float newX = SpawnerSystem.SpawnerPos.x + Mathf.Sin(angle) * RandomCache.GetCenterDistance();
             float newZ = SpawnerSystem.SpawnerPos.z + Mathf.Cos(angle) * RandomCache.GetCenterDistance();
             translation.Value = new float3(newX, SpawnerSystem.SpawnerPos.y, newZ);
             CommandBuffer.RemoveComponent<ResetCube>(index, entity);
-            int BlockType = rand.NextInt(1, SpawnerSystem.SpawnOdds + 1);
+            uint BlockType = RandomCache.GetCubeType();
             if (BlockType == 1) CommandBuffer.AddComponent(index, entity, new MoveUp(RandomCache.GetLifeSpan()));
             else CommandBuffer.AddComponent(index, entity, new MoveRandom(RandomCache.GetLifeSpan(), SpawnerSystem.GetRandComponentfloat3()));
         }

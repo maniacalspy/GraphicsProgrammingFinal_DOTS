@@ -33,12 +33,13 @@ public class MoveSystem : JobComponentSystem
         // The [ReadOnly] attribute tells the job scheduler that this job will not write to rotSpeedSpawnAndRemove
         public void Execute(Entity entity, int index, ref Translation translation, ref MoveUp moving)
         {
-     // Rotate something about its up vector at the speed given by RotationSpeed_SpawnAndRemove.
-            if(RandomCache.GetSubOneCount() < RandomCache.CacheSize)
-            {
-                RandomCache.AddSubOne(MoveSystem.rand.NextFloat());
-            }
-            translation.Value = new float3(translation.Value.x + DeltaTime * RandomCache.GetSubOne(), translation.Value.y + DeltaTime * RandomCache.GetSubOne(), translation.Value.z);
+            // Rotate something about its up vector at the speed given by RotationSpeed_SpawnAndRemove.
+            //if(RandomCache.GetSubOneCount() < RandomCache.CacheSize)
+            //{
+            //    RandomCache.AddSubOne(MoveSystem.rand.NextFloat());
+            //}
+            float randfloat = RandomCache.GetSubOne();
+            translation.Value = new float3(translation.Value.x + DeltaTime * randfloat, translation.Value.y + DeltaTime * randfloat, translation.Value.z);// + DeltaTime * RandomCache.GetSubOne());
             moving.LifeSpan -= DeltaTime;
 
             if (translation.Value.y > 7.0f || moving.LifeSpan <= 0f || translation.Value.x > 20f)
@@ -49,28 +50,28 @@ public class MoveSystem : JobComponentSystem
         }
     }
 
-    [RequireComponentTag(typeof(MovingCube))]
-    struct MoveRandomJob : IJobForEachWithEntity<Translation, MoveRandom>
-    {
-        public float DeltaTime;
+    //[RequireComponentTag(typeof(MovingCube))]
+    //struct MoveRandomJob : IJobForEachWithEntity<Translation, MoveRandom>
+    //{
+    //    public float DeltaTime;
 
-        [WriteOnly]
-        public EntityCommandBuffer.Concurrent CommandBuffer;
+    //    [WriteOnly]
+    //    public EntityCommandBuffer.Concurrent CommandBuffer;
 
-        // The [ReadOnly] attribute tells the job scheduler that this job will not write to rotSpeedSpawnAndRemove
-        public void Execute(Entity entity, int index, ref Translation translation, ref MoveRandom moving)
-        {
-            // Rotate something about its up vector at the speed given by RotationSpeed_SpawnAndRemove.
-            translation.Value = new float3(translation.Value.x + moving.Direction.x * DeltaTime, translation.Value.y + DeltaTime * moving.Direction.y, translation.Value.z + moving.Direction.z * DeltaTime);
-            moving.LifeSpan -= DeltaTime;
+    //    // The [ReadOnly] attribute tells the job scheduler that this job will not write to rotSpeedSpawnAndRemove
+    //    public void Execute(Entity entity, int index, ref Translation translation, ref MoveRandom moving)
+    //    {
+    //        // Rotate something about its up vector at the speed given by RotationSpeed_SpawnAndRemove.
+    //        translation.Value = new float3(translation.Value.x + moving.Direction.x * DeltaTime, translation.Value.y + DeltaTime * moving.Direction.y, translation.Value.z + moving.Direction.z * DeltaTime);
+    //        moving.LifeSpan -= DeltaTime;
 
-            if (translation.Value.y > 7.0f || moving.LifeSpan <= 0f || translation.Value.x > 20f)
-            {
-                CommandBuffer.RemoveComponent<MoveRandom>(index, entity);
-                CommandBuffer.AddComponent<ResetCube>(index, entity);
-            }
-        }
-    }
+    //        if (translation.Value.y > 7.0f || moving.LifeSpan <= 0f || translation.Value.x > 20f)
+    //        {
+    //            CommandBuffer.RemoveComponent<MoveRandom>(index, entity);
+    //            CommandBuffer.AddComponent<ResetCube>(index, entity);
+    //        }
+    //    }
+    //}
 
 
 

@@ -33,7 +33,7 @@ public class MoveRandomSystem : JobComponentSystem
         public void Execute(Entity entity, int index, ref Translation translation, ref MoveRandom moving)
         {
             // Rotate something about its up vector at the speed given by RotationSpeed_SpawnAndRemove.
-            translation.Value = new float3(translation.Value.x + moving.Direction.x * DeltaTime, translation.Value.y + DeltaTime * moving.Direction.y, translation.Value.z + moving.Direction.z * DeltaTime);
+            translation.Value = new float3(translation.Value.x + moving.Direction.x * DeltaTime, translation.Value.y + DeltaTime * moving.Direction.y, translation.Value.z);// + moving.Direction.z * DeltaTime);
             moving.LifeSpan -= DeltaTime;
 
             if (translation.Value.y > 7.0f || moving.LifeSpan <= 0f || translation.Value.x > 20f)
