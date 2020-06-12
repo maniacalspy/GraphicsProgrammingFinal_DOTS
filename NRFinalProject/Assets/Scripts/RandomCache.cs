@@ -7,9 +7,12 @@ using Unity.Jobs;
 using Unity.Burst;
 
 [BurstCompile]
-public struct RandomCache
+[UpdateInGroup(typeof(InitializationSystemGroup))]
+class RandomCache : ComponentSystem
 {
     public static int CacheSize = 10000;
+
+    static Unity.Mathematics.Random rand = new Unity.Mathematics.Random(2515646);
 
     #region SubOne
     static List<float> SubOneFloats = new List<float>();
@@ -17,58 +20,16 @@ public struct RandomCache
     static object SubOneLock = new object();
     public static float GetSubOne()
     {
-        float output;
-        if (SubOneFloats.Count - SubOneIndex <= 100)
-        {
-            lock (SubOneLock)
-            {
-                output = AccessCacheList(SubOneFloats, ref SubOneIndex);
-                if (SubOneIndex + 1 >= SubOneFloats.Count) SubOneIndex = 0;
-            }
-        }
-        else
-        {
-            output = SubOneIndex < SubOneFloats.Count ?
-            SubOneFloats[SubOneIndex] :
-            SubOneFloats[0];
-            if (SubOneIndex + 1 >= SubOneFloats.Count) SubOneIndex = 0;
-            else SubOneIndex++;
-        }
-        
+        float output = AccessCacheList(ref SubOneFloats, ref SubOneIndex);
+        if (SubOneIndex + 1 >= SubOneFloats.Count) SubOneIndex = 0;
         return output;
     }
-    static T AccessCacheList<T>(List<T> list, ref int index)
+    static T AccessCacheList<T>(ref List<T> list, ref int index)
     {
         T item = list[index];
         index++;
+        if (index + 1 >= list.Count) index = 0;
         return item;
-    }
-
-    public static int GetSubOneCount()
-    {
-        return SubOneFloats.Count;
-    }
-
-    public static void AddSubOne(float newFloat)
-    {
-        if (SubOneFloats.Count >= CacheSize)
-        {
-            try
-            {
-                if (SubOneIndex > 0) SubOneFloats[SubOneIndex - 1] = newFloat;
-            }
-            catch {
-                SubOneFloats[0] = newFloat;
-            }
-        }
-        else
-        {
-            try
-            {
-                SubOneFloats.Add(newFloat);
-            }
-            catch { }
-        }
     }
 
     #endregion SubOne
@@ -81,29 +42,8 @@ public struct RandomCache
 
     public static float3 GetDirection()
     {
-        float3 CurDirection = DirectionIndex < Directions.Count ? Directions[DirectionIndex] : CurDirection = Directions[0];
-
-        if (DirectionIndex + 1 >= Directions.Count) DirectionIndex = 0;
-        else DirectionIndex++;
-        return CurDirection;
-    }
-
-    public static int GetDirectionCount()
-    {
-        return Directions.Count;
-    }
-
-    public static void AddDirection(float3 newDirection)
-    {
-        if (Directions.Count >= CacheSize)
-        {
-            if (DirectionIndex > 0) Directions[DirectionIndex - 1] = newDirection;
-            else Directions[0] = newDirection;
-        }
-        else
-        {
-            Directions.Add(newDirection);
-        }
+        float3 output = AccessCacheList(ref Directions, ref DirectionIndex);
+        return output;
     }
 
     #endregion Directions
@@ -116,28 +56,8 @@ public struct RandomCache
 
     public static float GetAngle()
     {
-        float CurAngle = AngleIndex < Angles.Count ? Angles[AngleIndex] : Angles[0];
-        if (AngleIndex + 1 >= Angles.Count) AngleIndex = 0;
-        else AngleIndex++;
-        return CurAngle;
-    }
-
-    public static int GetAngleCount()
-    {
-        return Angles.Count;
-    }
-
-    public static void AddAngle(float newAngle)
-    {
-        if (Angles.Count >= CacheSize)
-        {
-            if (AngleIndex > 0) Angles[AngleIndex - 1] = newAngle;
-            else Angles[0] = newAngle;
-        }
-        else
-        {
-            Angles.Add(newAngle);
-        }
+        float output = AccessCacheList(ref Angles, ref AngleIndex);
+        return output;
     }
 
     #endregion Angles
@@ -150,28 +70,8 @@ public struct RandomCache
 
     public static float GetLifeSpan()
     {
-        float CurLS = LSIndex < LifeSpans.Count ? LifeSpans[LSIndex] : LifeSpans[0];
-        if (LSIndex + 1 >= LifeSpans.Count) LSIndex = 0;
-        else LSIndex++;
-        return CurLS;
-    }
-
-    public static int GetLifeSpanCount()
-    {
-        return LifeSpans.Count;
-    }
-
-    public static void AddLifeSpan(float newLS)
-    {
-        if (LifeSpans.Count >= CacheSize)
-        {
-            if (LSIndex > 0) LifeSpans[LSIndex - 1] = newLS;
-            else LifeSpans[0] = newLS;
-        }
-        else
-        {
-            LifeSpans.Add(newLS);
-        }
+        float output = AccessCacheList(ref LifeSpans, ref LSIndex);
+        return output;
     }
 
     #endregion LifeSpans
@@ -179,33 +79,41 @@ public struct RandomCache
     #region CenterDists
     static List<float> CenterDists = new List<float>();
     static int CDIndex = 0;
-
+    static float radius = 1f;
     public static float GetCenterDistance()
     {
-        float CurCD  = CDIndex < CenterDists.Count ? CenterDists[CDIndex] : CenterDists[0];
-        if (CDIndex + 1 >= CenterDists.Count) CDIndex = 0;
-        else CDIndex++;
-        return CurCD;
-    }
-
-    public static int GetCenterDistsCount()
-    {
-        return CenterDists.Count;
-    }
-
-    public static void AddCenterDist(float newCD)
-    {
-        if (CenterDists.Count >= CacheSize)
-        {
-            if (CDIndex > 0) CenterDists[LSIndex - 1] = newCD;
-            else CenterDists[0] = newCD;
-        }
-        else
-        {
-            CenterDists.Add(newCD);
-        }
+        float output = AccessCacheList(ref CenterDists, ref CDIndex);
+        return output;
     }
 
     #endregion CenterDists
 
+    #region CubeTypes
+    static List<uint> CubeTypes = new List<uint>();
+    static int CubeIndex = 0;
+    public static uint GetCubeType()
+    {
+        uint output = AccessCacheList(ref CubeTypes, ref CubeIndex);
+        return output;
+    }
+    #endregion CubeTypes
+
+    protected override void OnCreate()
+    {
+        for (int i = 0; i < CacheSize; i++)
+        {
+            SubOneFloats.Add(rand.NextFloat());
+            Directions.Add(rand.NextFloat3(MoveRandom.DirectionMin, MoveRandom.DirectionMax));
+            Angles.Add(rand.NextFloat(0f, Mathf.PI * 2));
+            LifeSpans.Add(rand.NextFloat(1f, 15f));
+            CenterDists.Add(rand.NextFloat(radius));
+            CubeTypes.Add(rand.NextUInt((uint)SpawnerSystem.SpawnOdds));
+        }
+        base.OnCreate();
+    }
+
+    protected override void OnUpdate()
+    {
+
+    }
 }

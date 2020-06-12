@@ -12,7 +12,7 @@ public class SpawnerSystem : JobComponentSystem
 {
     BeginInitializationEntityCommandBufferSystem EntityCommandBufferSystem;
 
-    static Unity.Mathematics.Random rand = new Unity.Mathematics.Random(2515646);
+
 
     public static float3 SpawnerPos;
     public static int SpawnOdds = 4;
@@ -25,12 +25,6 @@ public class SpawnerSystem : JobComponentSystem
 
     public static float3 GetRandComponentfloat3()
     {
-        if (RandomCache.GetDirectionCount() < RandomCache.CacheSize)
-        {
-            float3 DirectionToAdd = new float3(rand.NextFloat(MoveRandom.DirectionMin*2, MoveRandom.DirectionMax), rand.NextFloat(MoveRandom.DirectionMin, MoveRandom.DirectionMax),
-                                        rand.NextFloat(MoveRandom.DirectionMin*2, MoveRandom.DirectionMax));
-            RandomCache.AddDirection(DirectionToAdd);
-        }
         return RandomCache.GetDirection();
     }
 
@@ -82,21 +76,7 @@ public class SpawnerSystem : JobComponentSystem
                         
                        
                         // Place the instantiated in a grid with some noise
-                        float radius = 1f;
-
-                        if(RandomCache.GetAngleCount() < RandomCache.CacheSize)
-                        {
-                            RandomCache.AddAngle(rand.NextFloat(0f, Mathf.PI * 2));
-                        }
-
                         float angle = RandomCache.GetAngle();
-
-                        
-
-                        if (RandomCache.GetCenterDistsCount() < RandomCache.CacheSize)
-                        {
-                            RandomCache.AddCenterDist(rand.NextFloat(radius));
-                        }
 
                         float xpos = SpawnerPos.x + Mathf.Sin(angle) * RandomCache.GetCenterDistance();
                         float zpos = SpawnerPos.z + Mathf.Cos(angle) * RandomCache.GetCenterDistance();
@@ -108,15 +88,13 @@ public class SpawnerSystem : JobComponentSystem
                         //the +1 is to account for the fact that the upper limit is exclusive
                         
                         //this one doesn't use the cache to allow the number of random blocks to vary more
-                        int BlockType = rand.NextInt(1, SpawnOdds + 1);
+                        uint BlockType = RandomCache.GetCubeType();
                         if (BlockType == 1)
                         {
-                            if (RandomCache.GetLifeSpanCount() < RandomCache.CacheSize) RandomCache.AddLifeSpan(rand.NextFloat(1f, 25f)); 
                             CommandBuffer.AddComponent(index, instance, new MoveUp(RandomCache.GetLifeSpan()));
                         }
                         else
                         {
-                            if (RandomCache.GetLifeSpanCount() < RandomCache.CacheSize) RandomCache.AddLifeSpan(rand.NextFloat(1f, MoveRandom.LifeSpanMax));
                             CommandBuffer.AddComponent(index, instance, 
                                     new MoveRandom(RandomCache.GetLifeSpan(), GetRandComponentfloat3()));
                         }
